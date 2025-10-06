@@ -1,45 +1,58 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, tap } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { LoginRequest, LoginResponse } from '../models/auth';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+
+interface LoginRequest {
+  nombreUsuario: string;
+  contrasenaUsuario: string;
+}
+
+interface LoginResponse {
+  idUsuario: number;
+  nombreUsuario: string;
+  rol: string; // "Bibliotecario" o "Lector"
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private base = `${environment.apiUrl}/auth`;
+  private apiUrl = 'http://localhost:5188/api/Auth/login';
 
-  private readonly _user$ = new BehaviorSubject<LoginResponse | null>(this.readFromStorage());
-  user$ = this._user$.asObservable();
+  private currentUserSubject = new BehaviorSubject<LoginResponse | null>(this.getUser());
+  currentUser$ = this.currentUserSubject.asObservable();
 
-  private readFromStorage(): LoginResponse | null {
-    try {
-      const raw = localStorage.getItem('auth_user');
-      return raw ? JSON.parse(raw) as LoginResponse : null;
-    } catch { return null; }
-  }
-
-  private writeToStorage(user: LoginResponse | null) {
-    if (user) localStorage.setItem('auth_user', JSON.stringify(user));
-    else localStorage.removeItem('auth_user');
-  }
-
-  isLoggedInSync(): boolean { return this._user$.value !== null; }
-
-  login(payload: LoginRequest) {
-    return this.http.post<LoginResponse>(`${this.base}/login`, payload).pipe(
-      tap(user => {
-        this._user$.next(user);
-        this.writeToStorage(user);
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(this.apiUrl, credentials).pipe(
+      tap((user) => {
+        localStorage.setItem('user', JSON.stringify(user));
+        this.currentUserSubject.next(user);
       })
     );
   }
 
   logout() {
-    this._user$.next(null);
-    this.writeToStorage(null);
+    localStorage.removeItem('user');
+    this.currentUserSubject.next(null);
   }
 
-  // Helpers
-  get currentUser(): LoginResponse | null { return this._user$.value; }
+  getUser(): LoginResponse | null {
+    const data = localStorage.getItem('user');
+    return data ? JSON.parse(data) : null;
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.getUser();
+  }
+
+  getRole(): string | null {
+    return this.getUser()?.rol ?? null;
+  }
+
+  isBibliotecario(): boolean {
+    return this.getRole() === 'Bibliotecario';
+  }
+
+  isLector(): boolean {
+    return this.getRole() === 'Lector';
+  }
 }

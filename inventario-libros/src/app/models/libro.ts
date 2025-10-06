@@ -17,4 +17,15 @@ export interface LibroCreateDto {
   estadoLibro?: string | null;
 }
 
+export interface Libro {
+  idLibro?: number;  
+  tituloLibro: string;
+  idAutor: number;
+  anioDePublicacion: number;
+  generoLibro: string;
+  numeroCopias: number;
+  estadoLibro: string;
+}
+
+
 export type LibroUpdateDto = LibroCreateDto;

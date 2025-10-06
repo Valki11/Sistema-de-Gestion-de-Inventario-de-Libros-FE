@@ -1,37 +1,96 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 import { AutoresService } from '../services/autores.service';
-import { AutorDto } from '../models/autor';
+import { Autor } from '../models/autor'
+import { AuthService } from '../auth/auth.service';
 
 @Component({
-  standalone: true,
   selector: 'app-autores-list',
-  imports: [CommonModule, RouterLink],
+  standalone: true,
+  imports: [CommonModule],
   template: `
-  <div class="toolbar">
-    <a routerLink="/autores/nuevo">+ Nuevo autor</a>
-  </div>
-  <table *ngIf="autores?.length; else empty">
-    <thead><tr><th>ID</th><th>Nombre</th><th></th></tr></thead>
-    <tbody>
-      <tr *ngFor="let a of autores">
-        <td>{{a.idAutor}}</td>
-        <td>{{a.nombreAutor}}</td>
-        <td class="actions">
-          <a [routerLink]="['/autores', a.idAutor]">Editar</a>
-          <button (click)="del(a.idAutor)">Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <ng-template #empty><p>No hay autores.</p></ng-template>
-  `
+    <div class="container mt-4">
+      <h2 class="mb-3">Autores</h2>
+
+      <!-- Solo bibliotecario puede crear -->
+      <button *ngIf="auth.isBibliotecario()" class="btn btn-primary mb-3" (click)="nuevoAutor()">
+        ➕ Nuevo Autor
+      </button>
+
+      <table class="table table-striped table-hover" *ngIf="autores.length; else sinDatos">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre Autor</th>
+            <th *ngIf="auth.isBibliotecario()">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let autor of autores">
+            <td>{{ autor.idAutor }}</td>
+            <td>{{ autor.nombreAutor }}</td>
+
+            <!-- Solo bibliotecario puede editar/eliminar -->
+            <td *ngIf="auth.isBibliotecario()">
+              <button class="btn btn-sm btn-warning me-2" (click)="editarAutor(autor.idAutor!)">✏️ Editar</button>
+              <button class="btn btn-sm btn-danger" (click)="eliminarAutor(autor.idAutor!)">🗑️ Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #sinDatos>
+        <p class="text-muted">No hay autores registrados.</p>
+      </ng-template>
+    </div>
+  `,
 })
 export class AutoresListComponent implements OnInit {
   private svc = inject(AutoresService);
-  autores: AutorDto[] = [];
-  ngOnInit(){ this.load(); }
-  load(){ this.svc.getAll().subscribe(r => this.autores = r); }
-  del(id:number){ if(confirm('¿Eliminar autor?')) this.svc.delete(id).subscribe(()=>this.load()); }
+  private router = inject(Router);
+  auth = inject(AuthService); // 👈 servicio de autenticación
+
+  autores: Autor[] = [];
+
+  ngOnInit() {
+    this.cargarAutores();
+  }
+
+  cargarAutores() {
+    this.svc.getAll().subscribe({
+      next: (data) => (this.autores = data),
+      error: () => Swal.fire('Error', 'No se pudieron cargar los autores', 'error'),
+    });
+  }
+
+  nuevoAutor() {
+    this.router.navigate(['/autores/nuevo']);
+  }
+
+  editarAutor(id: number) {
+    this.router.navigate(['/autores', id]);
+  }
+
+  eliminarAutor(id: number) {
+    Swal.fire({
+      title: '¿Eliminar autor?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.svc.delete(id).subscribe({
+          next: () => {
+            Swal.fire('Eliminado', 'El autor fue eliminado correctamente', 'success');
+            this.cargarAutores();
+          },
+          error: () => Swal.fire('Error', 'No se pudo eliminar el autor', 'error'),
+        });
+      }
+    });
+  }
 }

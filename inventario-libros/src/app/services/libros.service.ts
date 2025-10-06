@@ -1,19 +1,30 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { LibroCreateDto, LibroDto, LibroUpdateDto } from '../models/libro';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Libro } from '../models/libro';
 
 @Injectable({ providedIn: 'root' })
 export class LibrosService {
   private http = inject(HttpClient);
-  private base = `${environment.apiUrl}/libros`;
+  private apiUrl = 'http://localhost:5188/api/Libros';
 
-  getAll(q?: string) {
-    const params = q ? new HttpParams().set('q', q) : undefined;
-    return this.http.get<LibroDto[]>(this.base, { params });
+  getAll(): Observable<Libro[]> {
+    return this.http.get<Libro[]>(this.apiUrl);
   }
-  getById(id: number) { return this.http.get<LibroDto>(`${this.base}/${id}`); }
-  create(dto: LibroCreateDto) { return this.http.post<{id:number}>(this.base, dto); }
-  update(id: number, dto: LibroUpdateDto) { return this.http.put<void>(`${this.base}/${id}`, dto); }
-  delete(id: number) { return this.http.delete<void>(`${this.base}/${id}`); }
+
+  getById(id: number): Observable<Libro> {
+    return this.http.get<Libro>(`${this.apiUrl}/${id}`);
+  }
+
+  create(libro: Libro): Observable<any> {
+    return this.http.post(this.apiUrl, libro);
+  }
+
+  update(id: number, libro: Libro): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, libro);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

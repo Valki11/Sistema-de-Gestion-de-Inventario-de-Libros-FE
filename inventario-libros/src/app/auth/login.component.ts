@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 import { AuthService } from './auth.service';
 
 @Component({
@@ -45,22 +46,38 @@ export class LoginComponent {
   });
 
   onSubmit() {
-  if (this.form.invalid) return;
-  this.loading = true;
-  this.error = '';
+    if (this.form.invalid) return;
 
-  const raw = this.form.getRawValue();
-  const payload = {
-    nombreUsuario: raw.nombreUsuario ?? '',
-    contrasenaUsuario: raw.contrasenaUsuario ?? ''
-  };
+    this.loading = true;
+    this.error = '';
 
-  this.auth.login(payload).subscribe({
-    next: () => this.router.navigateByUrl('/libros'),
-    error: (e) => { 
-      this.error = e?.error?.message ?? 'Credenciales inválidas'; 
-      this.loading = false; 
-    }
-  });
-}
+    const data = {
+      nombreUsuario: this.form.value.nombreUsuario ?? '',
+      contrasenaUsuario: this.form.value.contrasenaUsuario ?? ''
+    };
+
+this.auth.login(data).subscribe({
+
+      next: (user) => {
+        Swal.fire({
+          icon: 'success',
+          title: `Bienvenido ${user.nombreUsuario}`,
+          text: `Rol: ${user.rol}`,
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        // 🔹 Redirige según rol
+        if (user.rol === 'Bibliotecario') {
+          this.router.navigateByUrl('/libros');
+        } else {
+          this.router.navigateByUrl('/autores');
+        }
+      },
+      error: (e) => {
+        this.error = e?.error?.message ?? 'Credenciales inválidas';
+        this.loading = false;
+      }
+    });
+  }
 }

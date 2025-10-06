@@ -1,16 +1,32 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { AutorCreateDto, AutorDto, AutorUpdateDto } from '../models/autor';
+import { Observable } from 'rxjs';
+import { Autor } from '../models/autor';
+
 
 @Injectable({ providedIn: 'root' })
 export class AutoresService {
-  private http = inject(HttpClient);
-  private base = `${environment.apiUrl}/autores`;
+  private apiUrl = 'http://localhost:5188/api/Autores';
 
-  getAll() { return this.http.get<AutorDto[]>(this.base); }
-  getById(id: number) { return this.http.get<AutorDto>(`${this.base}/${id}`); }
-  create(dto: AutorCreateDto) { return this.http.post<{id:number}>(this.base, dto); }
-  update(id: number, dto: AutorUpdateDto) { return this.http.put<void>(`${this.base}/${id}`, dto); }
-  delete(id: number) { return this.http.delete<void>(`${this.base}/${id}`); }
+  constructor(private http: HttpClient) {}
+
+  getAll(): Observable<Autor[]> {
+    return this.http.get<Autor[]>(this.apiUrl);
+  }
+
+  getById(id: number): Observable<Autor> {
+    return this.http.get<Autor>(`${this.apiUrl}/${id}`);
+  }
+
+  create(data: Partial<Autor>): Observable<any> {
+    return this.http.post(this.apiUrl, data);
+  }
+
+  update(id: number, data: Partial<Autor>): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, data);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }
