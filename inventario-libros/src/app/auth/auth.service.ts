@@ -1,58 +1,68 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
-interface LoginRequest {
+export interface LoginRequest {
   nombreUsuario: string;
   contrasenaUsuario: string;
 }
 
-interface LoginResponse {
+export interface LoginResponse {
   idUsuario: number;
   nombreUsuario: string;
-  rol: string; // "Bibliotecario" o "Lector"
+  rol: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5188/api/Auth/login';
+  private apiUrl = 'http://localhost:5188/api/Auth';
+  private platformId = inject(PLATFORM_ID);
 
-  private currentUserSubject = new BehaviorSubject<LoginResponse | null>(this.getUser());
-  currentUser$ = this.currentUserSubject.asObservable();
+  constructor(private http: HttpClient) {}
 
-  login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(this.apiUrl, credentials).pipe(
-      tap((user) => {
-        localStorage.setItem('user', JSON.stringify(user));
-        this.currentUserSubject.next(user);
+  private isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
+
+  login(data: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, data).pipe(
+      tap(res => {
+        if (this.isBrowser()) {
+          localStorage.setItem('user', JSON.stringify(res));
+        }
       })
     );
   }
 
-  logout() {
-    localStorage.removeItem('user');
-    this.currentUserSubject.next(null);
+  logout(): void {
+    if (this.isBrowser()) {
+      localStorage.removeItem('user');
+    }
   }
 
   getUser(): LoginResponse | null {
-    const data = localStorage.getItem('user');
-    return data ? JSON.parse(data) : null;
+    if (!this.isBrowser()) return null;
+    const stored = localStorage.getItem('user');
+    return stored ? JSON.parse(stored) : null;
   }
 
   isAuthenticated(): boolean {
-    return !!this.getUser();
-  }
-
-  getRole(): string | null {
-    return this.getUser()?.rol ?? null;
+    if (!this.isBrowser()) return false;
+    return !!localStorage.getItem('user');
   }
 
   isBibliotecario(): boolean {
-    return this.getRole() === 'Bibliotecario';
+    const user = this.getUser();
+    return user?.rol?.toLowerCase() === 'bibliotecario';
   }
 
   isLector(): boolean {
-    return this.getRole() === 'Lector';
+    const user = this.getUser();
+    return user?.rol?.toLowerCase() === 'lector';
+  }
+
+  isLoggedInSync(): boolean {
+    return this.isAuthenticated();
   }
 }
