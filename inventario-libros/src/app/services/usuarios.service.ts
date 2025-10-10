@@ -1,16 +1,32 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { UsuarioCreateDto, UsuarioDto, UsuarioUpdateDto } from '../models/usuario';
+import { Usuario } from '../models/usuario';
 
 @Injectable({ providedIn: 'root' })
 export class UsuariosService {
-  private http = inject(HttpClient);
-  private base = `${environment.apiUrl}/usuarios`;
+  private apiUrl = `${environment.apiUrl}/Usuarios`;
 
-  getAll() { return this.http.get<UsuarioDto[]>(this.base); }
-  getById(id: number) { return this.http.get<UsuarioDto>(`${this.base}/${id}`); }
-  create(dto: UsuarioCreateDto) { return this.http.post<{id:number}>(this.base, dto); }
-  update(id: number, dto: UsuarioUpdateDto) { return this.http.put<void>(`${this.base}/${id}`, dto); }
-  delete(id: number) { return this.http.delete<void>(`${this.base}/${id}`); }
+  constructor(private http: HttpClient) {}
+
+  getAll(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(this.apiUrl);
+  }
+
+  getById(id: number): Observable<Usuario> {
+    return this.http.get<Usuario>(`${this.apiUrl}/${id}`);
+  }
+
+  create(usuario: Usuario): Observable<any> {
+    return this.http.post(this.apiUrl, usuario);
+  }
+
+  update(id: number, usuario: Usuario): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, usuario);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

@@ -10,4 +10,13 @@ export interface UsuarioCreateDto {
   idRol: number | null;
 }
 
+export interface Usuario {
+  idUsuario?: number;
+  nombreUsuario: string;
+  contrasenaUsuario: string;
+  idRol: number;
+  rolNombre?: string;
+}
+
+
 export type UsuarioUpdateDto = UsuarioCreateDto;

@@ -1,61 +1,100 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import Swal from 'sweetalert2';
 import { UsuariosService } from '../services/usuarios.service';
+import { Usuario } from '../models/usuario';
 
 @Component({
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   selector: 'app-usuarios-form',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
-  <h2>{{isEdit ? 'Editar' : 'Nuevo'}} usuario</h2>
-  <form [formGroup]="form" (ngSubmit)="save()">
-    <label>Nombre de usuario <input formControlName="nombreUsuario" required></label>
-    <label>Contraseña <input formControlName="contrasenaUsuario" required type="password"></label>
-    <label>Id Rol <input type="number" formControlName="idRol" required></label>
-    <div class="actions">
-      <button type="submit" [disabled]="form.invalid">Guardar</button>
-      <a routerLink="/usuarios">Cancelar</a>
-    </div>
-  </form>
+  <div class="container mt-4">
+    <h2>{{ isEdit ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <div class="mb-3">
+        <label class="form-label">Nombre de Usuario:</label>
+        <input formControlName="nombreUsuario" class="form-control" required>
+      </div>
+
+      <div class="mb-3" *ngIf="!isEdit">
+        <label class="form-label">Contraseña:</label>
+        <input formControlName="contrasenaUsuario" type="password" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Rol:</label>
+        <select formControlName="idRol" class="form-control" required>
+          <option [ngValue]="1">Bibliotecario</option>
+          <option [ngValue]="2">Lector</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-success me-2" [disabled]="form.invalid">
+        {{ isEdit ? 'Actualizar' : 'Guardar' }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+    </form>
+  </div>
   `
 })
+
 export class UsuariosFormComponent implements OnInit {
-  private fb = inject(FormBuilder);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private svc = inject(UsuariosService);
-
+  form: any;
   isEdit = false;
-  id?: number;
+  idUsuario!: number;
 
-  form = this.fb.group({
-    nombreUsuario: ['', Validators.required],
-    contrasenaUsuario: ['', Validators.required],
-    idRol: [1, Validators.required]
-  });
+  constructor(
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
+    private svc: UsuariosService
+  ) {
 
-  ngOnInit(){
-    this.id = Number(this.route.snapshot.paramMap.get('id'));
-    this.isEdit = !!this.id;
-    if(this.isEdit){
-      this.svc.getById(this.id!).subscribe(u => {
-        this.form.patchValue({
-          nombreUsuario: u.nombreUsuario,
-          contrasenaUsuario: '', // por seguridad no precargamos
-          idRol: 1 // ajusta si expones rol ID en el DTO
-        });
+    this.form = this.fb.group({
+      nombreUsuario: ['', Validators.required],
+      contrasenaUsuario: [''],
+      idRol: [2, Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.isEdit = true;
+      this.idUsuario = +id;
+      this.svc.getById(this.idUsuario).subscribe({
+        next: (u) => this.form.patchValue(u),
+        error: () => Swal.fire('Error', 'No se pudo cargar el usuario', 'error')
       });
     }
   }
 
-  save(){
-    const value = this.form.getRawValue();
-    if(this.isEdit){
-      this.svc.update(this.id!, value).subscribe(()=> this.router.navigateByUrl('/usuarios'));
-    } else {
-      this.svc.create(value).subscribe(()=> this.router.navigateByUrl('/usuarios'));
-    }
+  guardar(): void {
+    const usuario: Usuario = this.form.getRawValue() as Usuario;
+
+    const request = this.isEdit
+      ? this.svc.update(this.idUsuario, usuario)
+      : this.svc.create(usuario);
+
+    request.subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: this.isEdit ? 'Usuario actualizado' : 'Usuario creado',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        this.router.navigateByUrl('/usuarios');
+      },
+      error: () => Swal.fire('Error', 'No se pudo guardar el usuario', 'error')
+    });
+  }
+
+  cancelar(): void {
+    this.router.navigateByUrl('/usuarios');
   }
 }

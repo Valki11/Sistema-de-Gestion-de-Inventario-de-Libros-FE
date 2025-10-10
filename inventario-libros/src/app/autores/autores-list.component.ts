@@ -50,8 +50,7 @@ import { AuthService } from '../auth/auth.service';
 export class AutoresListComponent implements OnInit {
   private svc = inject(AutoresService);
   private router = inject(Router);
-  auth = inject(AuthService); // 👈 servicio de autenticación
-
+  auth = inject(AuthService); 
   autores: Autor[] = [];
 
   ngOnInit() {
