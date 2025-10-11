@@ -31,7 +31,7 @@ import { AuthService } from '../auth/auth.service';
         <tr *ngFor="let u of usuarios">
           <td>{{ u.idUsuario }}</td>
           <td>{{ u.nombreUsuario }}</td>
-          <td>{{ u.rolNombre || ('Rol #' + u.idRol) }}</td>
+          <td>{{ u.nombreRol || ('Rol #' + u.idRol) }}</td>
           <td *ngIf="auth.isBibliotecario()">
             <button (click)="editar(u.idUsuario!)" class="btn btn-warning btn-sm me-2">✏️ Editar</button>
             <button (click)="eliminar(u.idUsuario!)" class="btn btn-danger btn-sm">🗑️ Eliminar</button>

@@ -20,10 +20,18 @@ import { Usuario } from '../models/usuario';
         <input formControlName="nombreUsuario" class="form-control" required>
       </div>
 
-      <div class="mb-3" *ngIf="!isEdit">
-        <label class="form-label">Contraseña:</label>
-        <input formControlName="contrasenaUsuario" type="password" class="form-control" required>
-      </div>
+      <div class="mb-3">
+          <label>Contraseña</label>
+          <input
+            type="password"
+            class="form-control"
+            formControlName="contrasenaUsuario"
+            placeholder="••••••"
+          />
+          <small class="text-muted">
+            Deje vacío si no desea cambiar la contraseña
+          </small>
+        </div>
 
       <div class="mb-3">
         <label class="form-label">Rol:</label>

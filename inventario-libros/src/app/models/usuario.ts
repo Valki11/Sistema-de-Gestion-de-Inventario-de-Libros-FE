@@ -1,7 +1,7 @@
 export interface UsuarioDto {
   idUsuario: number;
   nombreUsuario: string;
-  rol: string;
+  nombreRol: string;
 }
 
 export interface UsuarioCreateDto {
@@ -15,7 +15,7 @@ export interface Usuario {
   nombreUsuario: string;
   contrasenaUsuario: string;
   idRol: number;
-  rolNombre?: string;
+  nombreRol?: string;
 }
 
 
