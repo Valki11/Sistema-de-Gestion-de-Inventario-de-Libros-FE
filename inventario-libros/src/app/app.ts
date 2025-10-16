@@ -10,8 +10,9 @@ import { AuthService } from './auth/auth.service';
   template: `
   <nav class="nav" *ngIf="auth.isLoggedInSync()">
     <a routerLink="/libros">Libros</a>
-    <a routerLink="/usuarios">Usuarios</a>
+    <a routerLink="/usuarios" *ngIf="auth.isBibliotecario()">Usuarios</a>
     <a routerLink="/autores">Autores</a>
+    <a routerLink="/prestamos" *ngIf="auth.isBibliotecario()">Préstamos</a>
     <span class="spacer"></span>
     <button (click)="logout()">Salir</button>
   </nav>

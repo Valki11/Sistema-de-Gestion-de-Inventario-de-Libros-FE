@@ -46,5 +46,8 @@ export const routes: Routes = [
   { path: 'usuarios/nuevo', loadComponent: () => import('./usuarios/usuarios-form.component').then(m => m.UsuariosFormComponent), canActivate: [usuariosGuard] },
   { path: 'usuarios/:id', loadComponent: () => import('./usuarios/usuarios-form.component').then(m => m.UsuariosFormComponent), canActivate: [usuariosGuard] },
   
+ { path: 'prestamos', loadComponent: () => import('./prestamos/prestamos-list.component').then(m => m.PrestamosListComponent), canActivate: [authGuard] },
+  { path: 'prestamos/nuevo', loadComponent: () => import('./prestamos/prestamos-form.component').then(m => m.PrestamosFormComponent), canActivate: [bibliotecarioGuard] },
+
   { path: '**', redirectTo: 'libros' },
 ];
