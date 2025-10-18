@@ -1,59 +1,74 @@
-# InventarioLibros
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
+---
 
-## Development server
+```markdown
+# Sistema de Gestión de Inventario de Libros – Frontend
 
-To start a local development server, run:
+Aplicación web desarrollada con **Angular 18** que permite gestionar **autores, libros, usuarios y préstamos** del sistema de biblioteca.  
+Se conecta al backend desarrollado en **.NET 8 + Oracle**.
+
+---
+
+##  Tecnologías
+
+- **Angular 18 (Standalone Components + Vite)**
+- **TypeScript**
+- **SweetAlert2**
+- **Bootstrap / CSS personalizado**
+- **xlsx** para exportación a Excel
+- **JWT Auth con Guards**
+
+---
+
+##  Estructura principal
+src/
+├── app/
+│ ├── auth/ → Login y autenticación JWT
+│ ├── autores/ → CRUD de autores
+│ ├── libros/ → CRUD y búsqueda de libros + exportar Excel
+│ ├── usuarios/ → CRUD de usuarios (solo bibliotecario)
+│ ├── prestamos/ → Registro y devolución de préstamos
+│ ├── services/ → Servicios compartidos HTTP
+│ ├── app.routes.ts → Configuración de rutas y guards
+│ └── app.ts → Layout principal y navbar
+└── assets/ → Imágenes, íconos y estilos
+
+
+---
+
+##  Roles y permisos
+
+| Rol | Acceso |
+|------|--------|
+| **Bibliotecario** | Puede gestionar libros, autores, usuarios y registrar préstamos |
+| **Lector** | Solo puede consultar catálogos |
+
+Los permisos se controlan con **`authGuard`** y **`bibliotecarioGuard`**.
+
+---
+
+##  Autenticación
+
+- Login vía `/login`
+
+---
+
+##  Funcionalidades principales
+
+| Módulo | Características |
+|---------|----------------|
+| **Libros** | Búsqueda por título/autor, CRUD completo, exportar Excel |
+| **Autores** | CRUD completo, exportar Excel |
+| **Usuarios** | CRUD (solo bibliotecario), validación de roles |
+| **Préstamos** | Registro de préstamos y devoluciones, validación de copias y rol lector |
+| **Login** | Autenticación JWT con control visual de errores |
+
+---
+
+##  Instalación
 
 ```bash
-ng serve
-```
+npm install
+npm start
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Accede en: http://localhost:4200/

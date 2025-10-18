@@ -10,7 +10,7 @@ export interface PrestamoDto {
   nombreUsuario?: string;
   fechaPrestamo: string;
   fechaDevolucion?: string | null;
-  estado: 'NO DISPONIBLE' | 'DISPONIBLE';
+  estado: 'PRESTADO' | 'DEVUELTO';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -18,7 +18,10 @@ export class PrestamosService {
   private baseUrl = 'http://localhost:5188/api/Prestamos';
 
   constructor(private http: HttpClient) {}
-
+  getAll(): Observable<PrestamoDto[]> {
+      return this.http.get<PrestamoDto[]>(this.baseUrl);
+    }
+    
   crear(idLibro: number, idUsuario: number): Observable<{ idPrestamo: number }> {
     const params = new HttpParams()
       .set('idLibro', String(idLibro))

@@ -1,10 +1,8 @@
-// src/app/prestamos/prestamos-list.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
-import { Router } from '@angular/router';
-
-import { PrestamosService } from '../services/prestamos.service';
+import { Router, RouterLink } from '@angular/router';
+import { PrestamosService, PrestamoDto  } from '../services/prestamos.service';
 import { LibrosService } from '../services/libros.service';
 import { LibroDto } from '../models/libro';
 import { UsuariosService } from '../services/usuarios.service';
@@ -25,11 +23,13 @@ type PrestamoItem = {
 @Component({
   standalone: true,
   selector: 'app-prestamos-list',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
   <div class="header">
     <h2>Préstamos</h2>
-    <button *ngIf="auth.isBibliotecario()" class="btn btn-primary" routerLink="/prestamos/nuevo">Nuevo préstamo</button>
+    <a *ngIf="auth.isBibliotecario()" class="btn btn-primary" routerLink="/prestamos/nuevo">
+          + Nuevo Prestamo
+      </a>
   </div>
 
   <table class="table">
@@ -78,12 +78,24 @@ export class PrestamosListComponent implements OnInit {
   auth = inject(AuthService);
   private router = inject(Router);
 
-  prestamos: PrestamoItem[] = [];
+  prestamos: PrestamoDto[] = [];
+
+  constructor(
+    private prestamosService: PrestamosService
+  ) {}
 
   ngOnInit(): void {
 
-    this.prestamos = []; 
+    this.cargarPrestamos();
   }
+
+  cargarPrestamos(): void {
+      this.prestamosService.getAll().subscribe({
+        next: (data) => this.prestamos = data,
+        error: () =>
+          Swal.fire('Error', 'No se pudieron cargar los préstamos.', 'error')
+      });
+    }
 
   devolver(idPrestamo: number) {
     Swal.fire({
